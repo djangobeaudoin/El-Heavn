@@ -1,0 +1,47 @@
+<html>
+    <head>
+        <title>Basic Model</title>
+    </head>
+    <body>
+        <script type="module">
+            import * as util from './src/utils.js'
+            import ThreeDraw from './src/ThreeDraw.js'
+            import Model from './model.js'
+
+            const drawOptions = {
+                // Set colors and the likes
+                patchesColor: 'black',
+                turtlesShape: 'Dart',
+                turtlesColor: 'green',
+                turtlesSize: 2,
+            }
+
+            async function run() {
+                const model = new Model()
+                await model.startup()
+                model.setup()
+
+                const view = new ThreeDraw(
+                    model,
+                    {
+                        turtles: { meshClass: 'Obj3DMesh', useAxes: false }, // Still not fully sure what this line does but without it nothing works.
+                        useAxes: false,
+                        useGrid: false,
+                    },
+                    drawOptions
+                )
+
+                util.toWindow({ util, model, view })
+
+                await util.timeoutLoop(
+                    () => {
+                        //model.step() // currently not required because the model does nothing
+                        view.draw()
+                    },
+                )
+            }
+            run()
+        </script>
+        <div id="modelDiv"></div>
+    </body>
+</html>
