@@ -7,20 +7,21 @@
             import * as util from './src/utils.js'
             import ThreeDraw from './src/ThreeDraw.js'
             import Model from './model.js'
-            import ColorMap from './src/ColorMap.js'
+            import Color from './src/Color.js'
 
-            let myColorMap = ColorMap.gradientColorMap(8, ['black', 'green'])
-            //let pleasework = ['black', 'green']
-            //let myColorMap = ColorMap.basicColorMap('black', 'green')
+            // Array of colors based on patch/turtle type
+            const typeColors = {
+                co2: Color.cssToPixel('orange'),
+                h2o: Color.cssToPixel('blue'),
+                dirt: Color.cssToPixel('black'),
+                tree: Color.cssToPixel('green')
+            }
 
             const drawOptions = {
                 // Set colors and the likes
-                patchesColor: (patch) => myColorMap.scaleColor(
-                    Math.round(patch.value), 0, 1
-                ),
-                //patchesColor: p => {if (p.value <= .5) return 'green'},
+                patchesColor: p => typeColors[p.type],
                 turtlesShape: 'Sphere',
-                turtlesColor: 'red',
+                turtlesColor: t => typeColors[t.type],
                 turtlesSize: 2,
             }
 
@@ -36,7 +37,7 @@
                         useAxes: false,
                         useGrid: false,
                     },
-                    drawOptions
+                    drawOptions,
                 )
 
                 util.toWindow({ util, model, view })
