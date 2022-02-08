@@ -7,12 +7,20 @@
             import * as util from './src/utils.js'
             import ThreeDraw from './src/ThreeDraw.js'
             import Model from './model.js'
+            import ColorMap from './src/ColorMap.js'
+
+            let myColorMap = ColorMap.gradientColorMap(8, ['black', 'green'])
+            //let pleasework = ['black', 'green']
+            //let myColorMap = ColorMap.basicColorMap('black', 'green')
 
             const drawOptions = {
                 // Set colors and the likes
-                patchesColor: 'black',
-                turtlesShape: 'Dart',
-                turtlesColor: 'green',
+                patchesColor: (patch) => myColorMap.scaleColor(
+                    Math.round(patch.value), 0, 1
+                ),
+                //patchesColor: p => {if (p.value <= .5) return 'green'},
+                turtlesShape: 'Sphere',
+                turtlesColor: 'red',
                 turtlesSize: 2,
             }
 
@@ -35,7 +43,7 @@
 
                 await util.timeoutLoop(
                     () => {
-                        //model.step() // currently not required because the model does nothing
+                        model.step()
                         view.draw()
                     },
                 )
