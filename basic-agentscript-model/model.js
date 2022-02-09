@@ -4,8 +4,8 @@ import World from './src/World.js'
 
 export default class CloudModel extends Model3D {
     // Set world size
-    constructor(worldDptions = World.defaultOptions(100)) {
-        super(worldDptions)
+    constructor(worldOptions = World.defaultOptions(100)) {
+        super(worldOptions)
     }
 
     // Misc. Variables
