@@ -36,13 +36,13 @@ export default class CloudModel extends Model3D {
             if (Math.random() > .9){
                 // Create H2O
                 this.h2os.createOne(t => {
-                    t.setxyz(this.trees[i].x, this.trees[i].y, this.trees[i].z)
+                    t.setxyz(this.trees[i].x, this.trees[i].y, -100)
                     t.type = this.h2oType
                 })
                 
                 // Create CO2
                 this.co2s.createOne(t => {
-                    t.setxyz(this.trees[i].x, this.trees[i].y, this.trees[i].z)
+                    t.setxyz(this.trees[i].x, this.trees[i].y, -100)
                     t.type = this.co2Type
                 })
             }
