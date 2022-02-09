@@ -25,21 +25,28 @@ export default class CloudModel extends Model3D {
         this.treeType = 'tree'
         this.dirtType = 'dirt'
         
-        this.createTurtles()
         this.createPatches()
+        this.createTurtles()
     }
 
     createTurtles() {
-        // co2
-        this.co2s.create(this.co2Count, t => {
-            t.setxyz(...this.world.randomPoint(), -100)
-            t.type = this.co2Type
-        })
-        // h2o
-        this.h2os.create(this.h2oCount, t => {
-            t.setxyz(...this.world.randomPoint(), -100)
-            t.type = this.h2oType
-        })
+        // Only create turtles on patches with trees. Currently to avoid absolutely frying the GPU these are only created 10% of the time.
+        // TODO: make this code more readable with variables.
+        for (var i = 0; i < this.trees.length; i++) {
+            if (Math.random() > .9){
+                // Create H2O
+                this.h2os.createOne(t => {
+                    t.setxyz(this.trees[i].x, this.trees[i].y, this.trees[i].z)
+                    t.type = this.h2oType
+                })
+                
+                // Create CO2
+                this.co2s.createOne(t => {
+                    t.setxyz(this.trees[i].x, this.trees[i].y, this.trees[i].z)
+                    t.type = this.co2Type
+                })
+            }
+        }
     }
 
     createPatches() {
