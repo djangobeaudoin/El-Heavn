@@ -11,7 +11,7 @@ export default class CloudModel extends Model3D {
     // Misc. Variables
     co2Count = 100
     h2oCount = 100
-    treePercentage = 0.25
+    treePercentage = 0.4
     particleSpeed = 1
 
     setup() {
@@ -28,32 +28,10 @@ export default class CloudModel extends Model3D {
         
         this.createPatches()
         this.patches.ask(p => {
-            // Ignite Center Tree
+            // Ignite Center Tree to begin fire
             if ((p.x === 0) && (p.y === 0)) this.igniteTree(p)
         })
-
-        // this.createTurtles()
     }
-
-    // createTurtles() {
-    //     // Only create turtles on patches with trees. Currently to avoid absolutely frying the GPU these are only created 10% of the time.
-    //     // TODO: make this code more readable with variables.
-    //     for (var i = 0; i < this.trees.length; i++) {
-    //         if (Math.random() > 0.9){
-    //             // Create H2O
-    //             this.h2os.createOne(t => {
-    //                 t.setxyz(this.trees[i].x, this.trees[i].y, -100)
-    //                 t.type = this.h2oType
-    //             })
-                
-    //             // Create CO2
-    //             this.co2s.createOne(t => {
-    //                 t.setxyz(this.trees[i].x, this.trees[i].y, -100)
-    //                 t.type = this.co2Type
-    //             })
-    //         }
-    //     }
-    // }
 
     igniteTree(treeToIgnite) {
         // Set tree to fire breed, which does nothing right now but someday it will
@@ -62,13 +40,13 @@ export default class CloudModel extends Model3D {
 
         // Create H2O
         this.h2os.createOne(t => {
-            t.setxyz(treeToIgnite.x, treeToIgnite.y, -100)
+            t.setxyz(treeToIgnite.x, treeToIgnite.y, this.world.minZ)
             t.type = this.h2oType
         })
 
         // Create CO2
         this.co2s.createOne(t => {
-            t.setxyz(treeToIgnite.x, treeToIgnite.y, -100)
+            t.setxyz(treeToIgnite.x, treeToIgnite.y, this.world.minZ)
             t.type = this.co2Type
         })
     }
@@ -93,6 +71,14 @@ export default class CloudModel extends Model3D {
         // Currently moving all turtles up at an arbitrary rate.
         this.turtles.ask(t => {
             t.setxyz(t.x, t.y, t.z + this.particleSpeed)
+        })
+
+        // Ignite neighboring trees
+        this.fires.ask(p => {
+            // p.neighbors returns an AgentArray, which can be looped through with the forLoop function. This is more efficient and easier than something like for (var i = 0; length, i++), but achieves the same thing
+            p.neighbors.forLoop(agent => {
+                if (agent.type == this.treeType) this.igniteTree(agent)
+            })
         })
     }
 }
