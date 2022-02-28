@@ -11,7 +11,7 @@ export default class CloudModel extends Model3D {
     // Misc. Variables
     co2Count = 100
     h2oCount = 100
-    treePercentage = 0.5
+    treePercentage = 0.25
     particleSpeed = 1
 
     setup() {
@@ -21,38 +21,62 @@ export default class CloudModel extends Model3D {
         this.h2oType = 'h2o'
 
         // Setup Patch Breeds and Types
-        this.patchBreeds('trees dirts')
+        this.patchBreeds('trees dirts fires')
         this.treeType = 'tree'
         this.dirtType = 'dirt'
+        this.fireType = 'fire'
         
         this.createPatches()
-        this.createTurtles()
+        this.patches.ask(p => {
+            // Ignite Center Tree
+            if ((p.x === 0) && (p.y === 0)) this.igniteTree(p)
+        })
+
+        // this.createTurtles()
     }
 
-    createTurtles() {
-        // Only create turtles on patches with trees. Currently to avoid absolutely frying the GPU these are only created 10% of the time.
-        // TODO: make this code more readable with variables.
-        for (var i = 0; i < this.trees.length; i++) {
-            if (Math.random() > .9){
-                // Create H2O
-                this.h2os.createOne(t => {
-                    t.setxyz(this.trees[i].x, this.trees[i].y, -100)
-                    t.type = this.h2oType
-                })
+    // createTurtles() {
+    //     // Only create turtles on patches with trees. Currently to avoid absolutely frying the GPU these are only created 10% of the time.
+    //     // TODO: make this code more readable with variables.
+    //     for (var i = 0; i < this.trees.length; i++) {
+    //         if (Math.random() > 0.9){
+    //             // Create H2O
+    //             this.h2os.createOne(t => {
+    //                 t.setxyz(this.trees[i].x, this.trees[i].y, -100)
+    //                 t.type = this.h2oType
+    //             })
                 
-                // Create CO2
-                this.co2s.createOne(t => {
-                    t.setxyz(this.trees[i].x, this.trees[i].y, -100)
-                    t.type = this.co2Type
-                })
-            }
-        }
+    //             // Create CO2
+    //             this.co2s.createOne(t => {
+    //                 t.setxyz(this.trees[i].x, this.trees[i].y, -100)
+    //                 t.type = this.co2Type
+    //             })
+    //         }
+    //     }
+    // }
+
+    igniteTree(treeToIgnite) {
+        // Set tree to fire breed, which does nothing right now but someday it will
+        treeToIgnite.setBreed(this.fires)
+        treeToIgnite.type = this.fireType
+
+        // Create H2O
+        this.h2os.createOne(t => {
+            t.setxyz(treeToIgnite.x, treeToIgnite.y, -100)
+            t.type = this.h2oType
+        })
+
+        // Create CO2
+        this.co2s.createOne(t => {
+            t.setxyz(treeToIgnite.x, treeToIgnite.y, -100)
+            t.type = this.co2Type
+        })
     }
 
     createPatches() {
         this.patches.ask(p => {
             p.value = Math.random()
-            if (Math.random() >= this.treePercentage) p.setBreed(this.trees)
+            if (Math.random() <= this.treePercentage) p.setBreed(this.trees)
             else p.setBreed(this.dirts)
         })
 
