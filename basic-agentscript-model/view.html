@@ -11,8 +11,8 @@
 
             // Array of colors based on patch/turtle type
             const typeColors = {
-                co2: Color.cssToPixel('orange'),
-                h2o: Color.cssToPixel('blue'),
+                //co2: Color.cssToPixel('yellow'),
+                h2o: Color.cssToPixel('gray'),
                 dirt: Color.cssToPixel('black'),
                 tree: Color.cssToPixel('green'),
                 fire: Color.cssToPixel('red')
@@ -48,7 +48,7 @@
                         model.step()
                         view.draw()
                     },
-                    50, // Steps to run
+                    250, // Steps to run
                     1 // FPS??
                 )
             }
