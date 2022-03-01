@@ -10,7 +10,7 @@ export default class CloudModel extends Model3D {
 
     // Misc. Variables
     treePercentage = 0.4
-    particleSpeed = 4
+    particleSpeed = 2
 
 
     setup() {
