@@ -15,13 +15,12 @@ export default class CloudModel extends Model3D {
 
     setup() {
         // Setup Turtle Breeds and Types
-        this.turtleBreeds('co2s h2os')
-        // this.co2Type = 'co2'
+        this.turtleBreeds('h2os')
         this.h2oType = 'h2o'
-        this.h2os.setDefault('atEdge', 'clamp')
-        // this.co2s.setDefault('atEdge', 'clamp')
 
-        // Water will be vapor by default
+        // Turtle Variables
+        this.h2os.setDefault('atEdge', 'clamp')
+        this.h2os.setDefault('ticks', 0)        // This ticks variable allows keeping track of how long the turtle has been alive
         this.h2os.setDefault('liquid', true)
 
         // Setup Patch Breeds and Types
@@ -29,11 +28,14 @@ export default class CloudModel extends Model3D {
         this.dirtType = 'dirt'
         this.fireType = 'fire'
         this.treeType = 'tree'
-        this.fires.setDefault('ticks', 0)
+
+        // Patch Variables
+        this.fires.setDefault('ticks', 0)       // Keeps track of how long the fire burns
         
         this.createPatches()
+
+        // Ignite Center Tree to begin fire
         this.patches.ask(p => {
-            // Ignite Center Tree to begin fire
             if ((p.x === 0) && (p.y === 0)) this.igniteTree(p)
         })
     }
@@ -49,28 +51,29 @@ export default class CloudModel extends Model3D {
         // Create Trees based on treePercentage
         this.patches.ask(p => {
             p.value = Math.random()
-            if (Math.random() <= this.treePercentage) p.setBreed(this.trees)
-            else p.setBreed(this.dirts)
-        })
-
-        // Set Types
-        this.trees.ask(p => {
-            p.type = this.treeType
-        })
-
-        this.dirts.ask(p => {
-            p.type = this.dirtType
+            if (Math.random() <= this.treePercentage) {
+                // Set Trees
+                p.setBreed(this.trees)
+                p.type = this.treeType
+            } else {
+                // Set Dirts
+                p.setBreed(this.dirts)
+                p.type = this.dirtType
+            }
         })
     }
 
     step() {
-        // Currently moving all turtles up at an arbitrary rate.
+        // Move Turtles
         this.turtles.ask(t => {
+            // Turtles move in brownian motion, constantly moving up
             t.setxyz(t.x + (Math.random() -0.5)*2, t.y + (Math.random() -0.5)*2, t.z + this.particleSpeed)
         })
 
-        // If the water is not liquid we don't care about it
+        // If the water is not liquid, don't worry about it
         this.h2os.ask(t => {
+            if (this.ticks > t.ticks + 50) t.liquid = false
+
             if (!t.liquid) t.die()
         })
 
@@ -87,10 +90,14 @@ export default class CloudModel extends Model3D {
             }
 
             // Create H2O
-            this.h2os.createOne(t => {
-            t.setxyz(p.x, p.y, this.world.minZ)
-            t.type = this.h2oType
-        })
+            // Currently only creating every other tick for the sake of not destroying computer
+            if (this.ticks % 2 === 0){
+                this.h2os.createOne(t => {
+                    t.setxyz(p.x, p.y, this.world.minZ)
+                    t.type = this.h2oType
+                    t.ticks = this.ticks
+                })
+            }
         })
     }
 }
