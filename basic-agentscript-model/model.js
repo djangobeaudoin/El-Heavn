@@ -161,11 +161,13 @@ export default class CloudModel extends Model3D {
         // Ignite neighboring trees
         this.fires.ask(p => {
             // p.neighbors returns an AgentArray, which can be looped through with the forLoop function. This is more efficient and easier than something like for (var i = 0; length, i++), but achieves the same thing
-            p.neighbors.forLoop(agent => {
-                if (agent.type == this.treeType) this.igniteTree(agent)
-            })
+            if (this.ticks % 15 == 0) { // fire spread time
+                p.neighbors.forLoop(agent => {
+                    if (agent.type == this.treeType) this.igniteTree(agent)
+                })
+            }
 
-            if (this.ticks > p.ticks + 11) {
+            if (this.ticks > p.ticks + 20) {
                 p.setBreed(this.dirts)
                 p.type = this.dirtType
             }
