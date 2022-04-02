@@ -81,6 +81,8 @@ export default class CloudModel extends Model3D {
     // Misc. Variables
     treePercentage = 0.4
     smokeSpeed = 6 // in 100m/s
+    smokeTemp = 100 // degrees C
+    dewPoint = -2 // degrees C
 
 
     setup() {
@@ -93,8 +95,8 @@ export default class CloudModel extends Model3D {
         this.h2os.setDefault('atEdge', 'clamp')
         this.CCNs.setDefault('atEdge', 'clamp')
         this.turtles.setDefault('ticks', 0)        // This ticks variable allows keeping track of how long the turtle has been alive
-        this.h2os.setDefault('temp', 100)
-        this.CCNs.setDefault('temp', 100)
+        this.h2os.setDefault('temp', this.smokeTemp)
+        this.CCNs.setDefault('temp', this.smokeTemp)
         this.h2os.setDefault('liquid', false)
 
         // Setup Patch Breeds and Types
@@ -145,7 +147,7 @@ export default class CloudModel extends Model3D {
              * IE, yes smoke probably has some variance which this does model,
              * but the scale is non-existent. Ie, every 15000s
              */
-            if (t.temp > -1) {
+            if (t.temp > this.dewPoint) {
                 t.setxyz(t.x + (Math.random() -0.5)*2, t.y + (Math.random() -0.5)*2, t.z + this.smokeSpeed)
                 t.temp -= 6
             }
