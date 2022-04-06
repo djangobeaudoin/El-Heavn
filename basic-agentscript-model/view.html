@@ -4,6 +4,9 @@
     </head>
     <body>
         <script type="module">
+            /**
+            * This file uses AgentScript, which requires several dependency files. These files are available at https://github.com/backspaces/agentscript
+            **/
             import * as util from './src/utils.js'
             import ThreeDraw from './src/ThreeDraw.js'
             import Model from './model.js'
@@ -19,7 +22,7 @@
             }
 
             const drawOptions = {
-                // Set colors and the likes
+                // Set colors
                 patchesColor: p => typeColors[p.type],
                 turtlesShape: 'Sphere',
                 turtlesColor: t => typeColors[t.type],
@@ -34,7 +37,7 @@
                 const view = new ThreeDraw(
                     model,
                     {
-                        turtles: { meshClass: 'Obj3DMesh', useAxes: false }, // Still not fully sure what this line does but without it nothing works.
+                        turtles: { meshClass: 'Obj3DMesh', useAxes: false },
                         useAxes: false,
                         useGrid: false,
                     },
@@ -49,7 +52,7 @@
                         view.draw()
                     },
                     250, // Steps to run
-                    1 // FPS??
+                    1 // FPS
                 )
             }
             run()

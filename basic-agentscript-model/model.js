@@ -1,72 +1,23 @@
-//import * as util from './src/utils.js'
 import Model3D from './src/Model3D.js'
 import World from './src/World.js'
 
+/**
+ * This model runs in a web server, which must host the parent directory as well as dependency files.
+ * This file uses AgentScript, which requires several dependency files. These files are available at https://github.com/backspaces/agentscript
+ */
 
 /**
- * A few Notes:
- * Assume each patch is 100m^2. This puts the total z range of the model at 12.8km, approximately the height of the troposphere
- * the base of the forest is at 2.4km
- * 
- * Some other notes:
- * 
- * as altitude increases:
- * temp decreases by 1C per 100m (?)
- * 
- * So to do:
- * find ratio of CCN and h2o per tree
- * temperature and pressure
- * model condensation of water onto CCN
- * 
- * patches are 100m^2
- * 
- * ignition delay 150s/m,
- * therefore each tick is 15000s, the ignition delay per patch.
- * trees take 43 hours to burn completely; 157650s
- * 1 tree = 15.765kg
- * 1cm^3 = 162000CCN
- * trees produce 1 litre of smoke / second
- * entire model is 2,097.152km^3; 209,715,200cm^3
- * moisture content of tree = 50%
- * 
- * 1 litre = 1000cm^3
- * 162000000CCN per litre
- * 2430000000000CCN per tick
- * relative humidity = 44%
- * 7.8825kg of water per tree (?)
- * average temperature is 11.66667C
- * average dew point is -1.666667
- * 
- * smoke moves ~60cm/s
- * 6m/10s
- * 60m/100s
- * 
- * smoke moves 9000m/tick?
- * 
- * so:
+ * Scale of model:
+ * each patch = 100m^2
+ * each tick = 1000s
  * each CCN sphere = 2430000000000CCN
  * each H2O sphere = 0.716590909090909 litres
- * trees burn for 11 ticks
  * 
- * if ticks = 15000s:
- * trees burn 11 ticks
- * smoke moves 9000m/tick
- * 
- * if ticks = 5000s
- * trees burn 33 ticks
- * smoke moves 3000m/tik
- * 
- * if ticks = 1000s
- * trees burn 165 ticks
- * smoke moves 600m/tick (reasonable-ish)
- * 
- * New Things:
- * each CCN sphere = 2430000000000CCN
- * each H2O sphere = 0.716590909090909 litres
+ * Parameter Notes:
+ * ignition delay = 150s/m
  * average temperature is 11.66667C
  * average dew point is -1.666667
- * Each tick = 1000s
- * Trees burn 165 (?) ticks
+ * Trees burn 165 ticks
  * Smoke moves 600m/tick
  * Smoke temp decreases 6C/tick
  * For now, assume smoke begins at 100C; as soon as water vapor is created.
@@ -78,9 +29,13 @@ export default class CloudModel extends Model3D {
         super(worldOptions)
     }
 
-    // Misc. Variables
+    // TODO: make all time-dependent variables relative to tick speed.
+    // Parameters
+    tickSpeed = 1000 // seconds
+    spreadTime = 15000 // s/100m
+    burnTime = 20000 // seconds
     treePercentage = 0.4
-    smokeSpeed = 6 // in 100m/s
+    smokeSpeed = 0.006 // in 100m/s
     smokeTemp = 100 // degrees C
     dewPoint = -2 // degrees C
 
@@ -142,18 +97,14 @@ export default class CloudModel extends Model3D {
     step() {
         // Move Turtles
         this.turtles.ask(t => {
-            /**
-             * Does this make sense?
-             * IE, yes smoke probably has some variance which this does model,
-             * but the scale is non-existent. Ie, every 15000s
-             */
+            // While smoke particles are above dew point, move upward and cool
             if (t.temp > this.dewPoint) {
-                t.setxyz(t.x + (Math.random() -0.5)*2, t.y + (Math.random() -0.5)*2, t.z + this.smokeSpeed)
+                t.setxyz(t.x + (Math.random() -0.5)*2, t.y + (Math.random() -0.5)*2, t.z + (this.smokeSpeed * this.tickSpeed))
                 t.temp -= 6
             }
         })
 
-        // Kill stuff after 30 ticks to not murder computer for prototyping
+        // Remove particles to reduce computational demand
         this.turtles.ask( t=> {
             if (this.ticks > t.ticks + 30) t.die()
         })
@@ -161,13 +112,14 @@ export default class CloudModel extends Model3D {
         // Ignite neighboring trees
         this.fires.ask(p => {
             // p.neighbors returns an AgentArray, which can be looped through with the forLoop function. This is more efficient and easier than something like for (var i = 0; length, i++), but achieves the same thing
-            if (this.ticks % 15 == 0) { // fire spread time
+            if (this.ticks % (this.spreadTime / this.tickSpeed) == 0) { // fire spread time
                 p.neighbors.forLoop(agent => {
                     if (agent.type == this.treeType) this.igniteTree(agent)
                 })
             }
 
-            if (this.ticks > p.ticks + 20) {
+            // Tree burn time
+            if (this.ticks > p.ticks + (this.burnTime / this.tickSpeed)) {
                 p.setBreed(this.dirts)
                 p.type = this.dirtType
             }
